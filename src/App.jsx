@@ -196,12 +196,13 @@ function FooterStrip() {
 
 export default function App() {
   const [view, setView] = useState('landing') // 'landing' | 'workspace'
+  const [rawInput, setRawInput] = useState('')  // lifted so input survives view transitions
 
   if (view === 'workspace') {
     return (
       <>
         <TopBar view="workspace" onBackToLanding={() => setView('landing')} />
-        <Workspace />
+        <Workspace rawInput={rawInput} onInputChange={setRawInput} />
       </>
     )
   }
