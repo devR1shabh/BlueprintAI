@@ -9,11 +9,10 @@ const Icon = () => (
   </svg>
 )
 
-// Unique ID counter for Mermaid render calls (avoids DOM id collisions)
 let mermaidCounter = 0
 
 function useMermaidRenderer(syntax) {
-  const containerRef  = useRef(null)
+  const containerRef              = useRef(null)
   const [svgHtml, setSvgHtml]     = useState('')
   const [renderError, setRenderError] = useState(null)
   const [rendering, setRendering] = useState(false)
@@ -25,36 +24,35 @@ function useMermaidRenderer(syntax) {
     setRenderError(null)
 
     try {
-      // Dynamically import mermaid to avoid SSR issues and keep initial bundle lean
       const mermaid = (await import('mermaid')).default
 
-      // Initialise once with our dark theme settings
       mermaid.initialize({
         startOnLoad:  false,
         theme:        'dark',
         darkMode:     true,
         themeVariables: {
-          background:       '#0d0f1c',
-          mainBkg:          '#141728',
-          nodeBorder:       '#3c43d0',
-          lineColor:        '#4a55e8',
-          textColor:        '#a5b8fc',
-          fontSize:         '13px',
+          background:          '#0d0f1c',
+          mainBkg:             '#141728',
+          nodeBorder:          '#3c43d0',
+          lineColor:           '#4a55e8',
+          textColor:           '#a5b8fc',
+          fontSize:            '13px',
           edgeLabelBackground: '#1e2235',
         },
         flowchart: {
-          htmlLabels:   true,
-          curve:        'basis',
-          padding:      16,
-          nodeSpacing:  50,
-          rankSpacing:  60,
+          htmlLabels:  true,
+          curve:       'basis',
+          padding:     16,
+          nodeSpacing: 50,
+          rankSpacing: 60,
         },
         securityLevel: 'loose',
       })
 
-      const id  = `mermaid-diagram-${++mermaidCounter}`
+      const id = `mermaid-diagram-${++mermaidCounter}`
       const { svg } = await mermaid.render(id, syntax)
       setSvgHtml(svg)
+
     } catch (err) {
       console.error('[BlueprintAI] Mermaid render error:', err)
       setRenderError(err.message || 'Failed to render diagram')
@@ -63,9 +61,7 @@ function useMermaidRenderer(syntax) {
     }
   }, [syntax])
 
-  useEffect(() => {
-    render()
-  }, [render])
+  useEffect(() => { render() }, [render])
 
   return { containerRef, svgHtml, renderError, rendering, retry: render }
 }
@@ -99,10 +95,7 @@ export default function DiagramModule({ mermaidSyntax, index }) {
         </button>
       }
     >
-      {/* Diagram area */}
       <div className="rounded-xl border border-surface-700/40 bg-surface-950/60 overflow-hidden">
-
-        {/* Chrome bar */}
         <div className="flex items-center gap-2 px-4 py-2.5 border-b border-surface-800/60 bg-surface-900/60">
           <div className="flex items-center gap-1.5">
             <span className="w-2.5 h-2.5 rounded-full bg-surface-700" />
@@ -121,16 +114,14 @@ export default function DiagramModule({ mermaidSyntax, index }) {
           )}
         </div>
 
-        {/* SVG output */}
-        {!renderError && !rendering && svgHtml && (
-          <div
-            ref={containerRef}
-            className="p-4 flex items-center justify-center overflow-x-auto"
-            dangerouslySetInnerHTML={{ __html: svgHtml }}
-          />
-        )}
+        <div
+  ref={containerRef}
+  className="p-4 flex items-center justify-center overflow-x-auto min-h-[300px]"
+  dangerouslySetInnerHTML={
+    svgHtml ? { __html: svgHtml } : undefined
+  }
+/>
 
-        {/* Rendering placeholder */}
         {rendering && (
           <div className="p-10 flex flex-col items-center justify-center gap-3 text-surface-600">
             <svg className="w-8 h-8 animate-spin text-brand-600" viewBox="0 0 24 24" fill="none">
@@ -141,7 +132,6 @@ export default function DiagramModule({ mermaidSyntax, index }) {
           </div>
         )}
 
-        {/* Error state */}
         {renderError && !rendering && (
           <div className="p-6 flex flex-col items-center justify-center gap-3 text-center">
             <div className="w-10 h-10 rounded-xl bg-red-950/40 border border-red-800/40 flex items-center justify-center text-red-400">
@@ -164,7 +154,6 @@ export default function DiagramModule({ mermaidSyntax, index }) {
         )}
       </div>
 
-      {/* Source code toggle */}
       {showSource && (
         <div className="mt-3 rounded-xl border border-surface-700/40 bg-surface-950/60 overflow-hidden animate-fade-in">
           <div className="flex items-center gap-2 px-4 py-2 border-b border-surface-800/60 bg-surface-900/60">

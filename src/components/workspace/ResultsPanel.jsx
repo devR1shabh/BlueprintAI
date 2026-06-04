@@ -1,12 +1,12 @@
 import ExecutiveOverview from '../modules/ExecutiveOverview.jsx'
-import SummaryModule  from '../modules/SummaryModule.jsx'
-import WorkflowModule from '../modules/WorkflowModule.jsx'
-import RolesModule    from '../modules/RolesModule.jsx'
-import RisksModule    from '../modules/RisksModule.jsx'
-import SOPModule      from '../modules/SOPModule.jsx'
-import DiagramModule  from '../modules/DiagramModule.jsx'
+import SummaryModule     from '../modules/SummaryModule.jsx'
+import WorkflowModule    from '../modules/WorkflowModule.jsx'
+import RolesModule       from '../modules/RolesModule.jsx'
+import RisksModule       from '../modules/RisksModule.jsx'
+import SOPModule         from '../modules/SOPModule.jsx'
+import DiagramModule     from '../modules/DiagramModule.jsx'
 
-// ─── Empty state (before first analysis) ─────────────────────────────────────
+// ─── Empty state ──────────────────────────────────────────────────────────────
 
 function EmptyStateHero() {
   const modules = [
@@ -27,7 +27,7 @@ function EmptyStateHero() {
       <p className="text-sm text-surface-600 max-w-xs leading-relaxed">
         Enter your business process and click{' '}
         <strong className="text-surface-500 font-medium">Analyze Blueprint</strong>{' '}
-        to generate all six outputs.
+        to generate all outputs.
       </p>
       <div className="mt-6 flex items-center gap-1.5 flex-wrap justify-center">
         {modules.map(m => (
@@ -53,9 +53,9 @@ function ProcessingSkeleton() {
             <div className="ml-auto h-3 w-16 rounded-full bg-surface-800/40 animate-pulse" />
           </div>
           <div className="flex flex-col gap-2.5">
-            <div className="h-2.5 rounded-full bg-surface-800/50 animate-pulse w-full" style={{ animationDelay: `${i * 100}ms` }} />
-            <div className="h-2.5 rounded-full bg-surface-800/40 animate-pulse w-4/5" style={{ animationDelay: `${i * 150}ms` }} />
-            <div className="h-2.5 rounded-full bg-surface-800/30 animate-pulse w-3/5" style={{ animationDelay: `${i * 200}ms` }} />
+            <div className="h-2.5 rounded-full bg-surface-800/50 animate-pulse w-full"  style={{ animationDelay: `${i * 100}ms` }} />
+            <div className="h-2.5 rounded-full bg-surface-800/40 animate-pulse w-4/5"  style={{ animationDelay: `${i * 150}ms` }} />
+            <div className="h-2.5 rounded-full bg-surface-800/30 animate-pulse w-3/5"  style={{ animationDelay: `${i * 200}ms` }} />
           </div>
         </div>
       ))}
@@ -66,7 +66,7 @@ function ProcessingSkeleton() {
 // ─── ResultsPanel ─────────────────────────────────────────────────────────────
 
 export default function ResultsPanel({ outputs, status }) {
-  if (status === 'idle') return <EmptyStateHero />
+  if (status === 'idle')       return <EmptyStateHero />
   if (status === 'processing') return <ProcessingSkeleton />
 
   if (status === 'error') {
@@ -85,18 +85,18 @@ export default function ResultsPanel({ outputs, status }) {
     )
   }
 
-  // status === 'ready' — render all six modules
+  // status === 'ready'
   const { summary, steps, roles, risks, sop, mermaidSyntax } = outputs
 
   return (
     <div className="flex flex-col gap-5">
-      <ExecutiveOverview outputs={outputs} />
-      <SummaryModule  summary={summary}             index={0} />
-      <WorkflowModule steps={steps}                 index={1} />
-      <RolesModule    roles={roles}                 index={2} />
-      <RisksModule    risks={risks}                 index={3} />
-      <SOPModule      sop={sop} title={summary?.title} index={4} />
-      <DiagramModule  mermaidSyntax={mermaidSyntax} index={5} />
+      <ExecutiveOverview outputs={outputs}                            />
+      <SummaryModule     summary={summary}             index={0}     />
+      <WorkflowModule    steps={steps}                 index={1}     />
+      <RolesModule       roles={roles}                 index={2}     />
+      <RisksModule       risks={risks}                 index={3}     />
+      <SOPModule         sop={sop} title={summary?.title} index={4} />
+      <DiagramModule     mermaidSyntax={mermaidSyntax} index={5}     />
     </div>
   )
 }
