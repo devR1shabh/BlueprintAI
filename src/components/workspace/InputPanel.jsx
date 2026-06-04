@@ -1,3 +1,5 @@
+import TemplateSelector from './TemplateSelector.jsx'
+
 const PLACEHOLDER = `Describe your business process here…
 
 Example:
@@ -20,6 +22,9 @@ export default function InputPanel({ rawInput, onInputChange, onAnalyze, status 
           </p>
         </div>
       </div>
+
+      {/* Quick Start Templates */}
+      <TemplateSelector onSelect={onInputChange} disabled={isProcessing} />
 
       {/* Textarea card */}
       <div className="relative rounded-2xl border border-surface-700/60 bg-surface-900/80 overflow-hidden focus-within:border-brand-600/60 transition-colors duration-200">
