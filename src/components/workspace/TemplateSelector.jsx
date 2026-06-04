@@ -15,6 +15,7 @@ export default function TemplateSelector({ onSelect, disabled }) {
     if (disabled) return
     setActiveId(template.id)
     onSelect(template.content)
+    window.scrollTo({ top: 0, behavior: "smooth" })
   }
 
   return (

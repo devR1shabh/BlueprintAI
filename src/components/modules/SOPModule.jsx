@@ -118,7 +118,7 @@ export default function SOPModule({ sop, title, index }) {
             <span className="w-2.5 h-2.5 rounded-full bg-surface-700" />
             <span className="w-2.5 h-2.5 rounded-full bg-surface-700" />
           </div>
-          <span className="ml-2 text-xs text-surface-600 font-mono">standard_operating_procedure.txt</span>
+          <span className="ml-2 text-xs text-surface-600 font-mono">Generated SOP Document</span>
         </div>
 
         {/* SOP text */}
