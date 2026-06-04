@@ -18,6 +18,7 @@ import { summarize }      from '../engine/summarizer.js'
 import { extractSteps }   from '../engine/stepExtractor.js'
 import { extractRoles }   from '../engine/roleExtractor.js'
 import { analyzeRisks }   from '../engine/riskAnalyzer.js'
+import { analyzeCompliance } from '../engine/complianceAnalyzer.js'
 import { generateSOP }    from '../engine/sopGenerator.js'
 import { buildMermaid }   from '../engine/mermaidBuilder.js'
 
@@ -28,6 +29,7 @@ const EMPTY_OUTPUTS = {
   steps:         [],     // Step[]
   roles:         [],     // Role[]
   risks:         [],     // Risk[]
+  compliance:    null,   // { score, status, findings, recommendations }
   sop:           null,   // string
   mermaidSyntax: null,   // string
 }
@@ -85,6 +87,10 @@ export function useProcessEngine() {
       await tick()
 
       // ── Stage 5: SOP (depends on all upstream outputs) ────────────────────
+      const compliance = analyzeCompliance(summary, steps, roles)
+
+      await tick()
+
       const sop = generateSOP({ summary, steps, roles, risks })
 
       await tick()
@@ -95,7 +101,7 @@ export function useProcessEngine() {
       // ── Atomic state update ───────────────────────────────────────────────
       // All outputs written in a single setState call so React re-renders
       // everything at once, not in six separate paints.
-      const result = { summary, steps, roles, risks, sop, mermaidSyntax }
+      const result = { summary, steps, roles, risks, compliance, sop, mermaidSyntax }
       setOutputs(result)
       setStatus('ready')
 

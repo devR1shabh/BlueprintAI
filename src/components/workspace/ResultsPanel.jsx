@@ -2,15 +2,18 @@ import SummaryModule  from '../modules/SummaryModule.jsx'
 import WorkflowModule from '../modules/WorkflowModule.jsx'
 import RolesModule    from '../modules/RolesModule.jsx'
 import RisksModule    from '../modules/RisksModule.jsx'
+import ComplianceModule from '../modules/ComplianceModule.jsx'
 import SOPModule      from '../modules/SOPModule.jsx'
 import DiagramModule  from '../modules/DiagramModule.jsx'
+import ExportCenterModule from '../modules/ExportCenterModule.jsx'
 
 // ─── Empty state (before first analysis) ─────────────────────────────────────
 
 function EmptyStateHero() {
   const modules = [
     'Process Summary', 'Workflow Steps', 'Roles & Actors',
-    'Risk Analysis', 'SOP Document', 'Workflow Diagram',
+    'Risk Analysis', 'Compliance Analysis', 'SOP Document',
+    'Workflow Diagram',
   ]
   return (
     <div className="flex flex-col items-center justify-center py-16 text-center animate-fade-in">
@@ -26,7 +29,7 @@ function EmptyStateHero() {
       <p className="text-sm text-surface-600 max-w-xs leading-relaxed">
         Enter your business process and click{' '}
         <strong className="text-surface-500 font-medium">Analyze Blueprint</strong>{' '}
-        to generate all six outputs.
+        to generate all workflow outputs.
       </p>
       <div className="mt-6 flex items-center gap-1.5 flex-wrap justify-center">
         {modules.map(m => (
@@ -85,7 +88,7 @@ export default function ResultsPanel({ outputs, status }) {
   }
 
   // status === 'ready' — render all six modules
-  const { summary, steps, roles, risks, sop, mermaidSyntax } = outputs
+  const { summary, steps, roles, risks, compliance, sop, mermaidSyntax } = outputs
 
   return (
     <div className="flex flex-col gap-5">
@@ -93,8 +96,10 @@ export default function ResultsPanel({ outputs, status }) {
       <WorkflowModule steps={steps}                 index={1} />
       <RolesModule    roles={roles}                 index={2} />
       <RisksModule    risks={risks}                 index={3} />
-      <SOPModule      sop={sop} title={summary?.title} index={4} />
-      <DiagramModule  mermaidSyntax={mermaidSyntax} index={5} />
+      <ComplianceModule compliance={compliance}     index={4} />
+      <SOPModule      sop={sop} title={summary?.title} index={5} />
+      <DiagramModule  mermaidSyntax={mermaidSyntax} index={6} />
+      <ExportCenterModule outputs={outputs}         index={7} />
     </div>
   )
 }

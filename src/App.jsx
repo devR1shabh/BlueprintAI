@@ -1,6 +1,7 @@
 import { useState } from 'react'
 import TopBar from './components/layout/TopBar.jsx'
 import Workspace from './components/workspace/Workspace.jsx'
+import PromptLab from './components/prompt-lab/PromptLab.jsx'
 
 // ─── Feature data ─────────────────────────────────────────────────────────────
 
@@ -195,21 +196,41 @@ function FooterStrip() {
 // ─── Root App ─────────────────────────────────────────────────────────────────
 
 export default function App() {
-  const [view, setView] = useState('landing') // 'landing' | 'workspace'
+  const [view, setView] = useState('landing') // 'landing' | 'workspace' | 'promptLab'
   const [rawInput, setRawInput] = useState('')  // lifted so input survives view transitions
 
   if (view === 'workspace') {
     return (
       <>
-        <TopBar view="workspace" onBackToLanding={() => setView('landing')} />
+        <TopBar
+          view="workspace"
+          onBackToLanding={() => setView('landing')}
+          onOpenPromptLab={() => setView('promptLab')}
+        />
         <Workspace rawInput={rawInput} onInputChange={setRawInput} />
+      </>
+    )
+  }
+
+  if (view === 'promptLab') {
+    return (
+      <>
+        <TopBar
+          view="promptLab"
+          onBackToLanding={() => setView('landing')}
+          onOpenWorkspace={() => setView('workspace')}
+        />
+        <PromptLab />
       </>
     )
   }
 
   return (
     <div className="grain min-h-screen bg-surface-950">
-      <TopBar view="landing" />
+      <TopBar
+        view="landing"
+        onOpenPromptLab={() => setView('promptLab')}
+      />
       <main>
         <HeroSection onGetStarted={() => setView('workspace')} />
         <FeaturesSection onGetStarted={() => setView('workspace')} />

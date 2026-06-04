@@ -10,7 +10,7 @@ export default function Workspace({ rawInput, onInputChange }) {
 
   // Scroll-spy: track active section via IntersectionObserver
   useEffect(() => {
-    const sections = ['input', 'summary', 'workflow', 'roles', 'risks', 'sop', 'diagram']
+    const sections = ['input', 'summary', 'workflow', 'roles', 'risks', 'compliance', 'sop', 'diagram', 'export-center']
     // activeSection state lives in Sidebar via the observer — see Sidebar.jsx
     const observer = new IntersectionObserver(
       () => {}, // Sidebar manages its own highlight; this observer is a no-op placeholder
@@ -58,7 +58,7 @@ export default function Workspace({ rawInput, onInputChange }) {
                 <div className="flex flex-col gap-0.5">
                   <h2 className="font-display font-700 text-lg text-white">Blueprint Results</h2>
                   <p className="text-sm text-surface-500">
-                    {status === 'idle'       && 'Six structured outputs will appear here.'}
+                    {status === 'idle'       && 'Structured outputs will appear here.'}
                     {status === 'processing' && 'Analyzing your process…'}
                     {status === 'ready'      && `Analysis complete — ${outputs.steps.length} steps, ${outputs.roles.length} roles, ${outputs.risks.length} risks identified.`}
                     {status === 'error'      && 'Something went wrong. Please try again.'}

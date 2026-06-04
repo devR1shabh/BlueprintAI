@@ -60,6 +60,16 @@ const NAV_ITEMS = [
     ),
   },
   {
+    id: 'compliance',
+    label: 'Compliance',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M12 22s8-4 8-10V5l-8-3-8 3v7c0 6 8 10 8 10z"/>
+        <path d="M9 12l2 2 4-5"/>
+      </svg>
+    ),
+  },
+  {
     id: 'sop',
     label: 'SOP',
     icon: (
@@ -79,6 +89,17 @@ const NAV_ITEMS = [
         <line x1="3" y1="15" x2="21" y2="15"/>
         <line x1="9" y1="3" x2="9" y2="21"/>
         <line x1="15" y1="3" x2="15" y2="21"/>
+      </svg>
+    ),
+  },
+  {
+    id: 'export-center',
+    label: 'Export',
+    icon: (
+      <svg width="15" height="15" viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="1.75" strokeLinecap="round" strokeLinejoin="round">
+        <path d="M21 15v4a2 2 0 0 1-2 2H5a2 2 0 0 1-2-2v-4"/>
+        <polyline points="7 10 12 15 17 10"/>
+        <line x1="12" y1="15" x2="12" y2="3"/>
       </svg>
     ),
   },
