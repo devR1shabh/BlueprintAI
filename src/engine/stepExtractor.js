@@ -23,8 +23,24 @@ const STEP_CONNECTORS = [
 // ─── Decision/conditional markers ────────────────────────────────────────────
 
 const DECISION_MARKERS = [
-  'if ', 'unless ', 'when ', 'in case', 'depending on', 'based on',
-  'should ', 'whether ', 'either ', 'otherwise', 'alternatively',
+  'if ', 'unless ', 'whether ', 'either ', 'otherwise', 'alternatively',
+]
+
+const QUESTION_WORDS = ['is ', 'are ', 'does ', 'do ', 'can ', 'will ', 'has ', 'have ', 'was ', 'were ']
+
+const CONDITIONAL_TRANSFORMS = [
+  { 
+    regex: /^if (approved|rejected|successful|failed|valid|invalid|so|not)[,\s]+(.*)$/i, 
+    question: (m) => capitalise(m[1]) + '?',
+    action: (m) => m[2],
+    label: (m) => /rejected|failed|invalid|not/i.test(m[1]) ? 'No' : 'Yes'
+  },
+  { 
+    regex: /^(?:for|when) (.*?)[,\s]+(.*?)$/i, 
+    question: (m) => capitalise(m[1]) + '?',
+    action: (m) => m[2],
+    label: () => 'Yes'
+  }
 ]
 
 // ─── Trigger markers (start events) ──────────────────────────────────────────
@@ -41,6 +57,14 @@ const END_MARKERS = [
   'finally', 'lastly', 'completed', 'closed', 'resolved', 'archived',
   'finalized', 'concluded', 'end of', 'process ends', 'is complete',
   'is finished', 'closes the', 'marks the end',
+]
+
+// ─── Branching patterns ───────────────────────────────────────────────────────
+
+const BRANCH_PATTERNS = [
+  { label: 'No', pattern: /(?:if not|otherwise|if rejected|rejection|fail|invalid)\b.*?(?:return|go back|repeat|step\s*(\d+))/i },
+  { label: 'Yes', pattern: /(?:if approved|approval|success|valid|if so)\b.*?(?:continue|proceed|next)/i },
+  { label: 'Return', pattern: /(?:return|go back|repeat|restart)\s+to\s+(?:the\s+)?(?:start|beginning|step\s*(\d+))/i },
 ]
 
 // ─── Common actor patterns ────────────────────────────────────────────────────
@@ -103,12 +127,52 @@ function inferActor(sentence) {
   return 'Process Actor'
 }
 
-function inferType(sentence) {
+function inferType(sentence, branches = []) {
   const lower = sentence.toLowerCase()
   if (TRIGGER_MARKERS.some(m => lower.includes(m))) return 'trigger'
   if (END_MARKERS.some(m => lower.includes(m))) return 'end'
-  if (DECISION_MARKERS.some(m => lower.startsWith(m) || lower.includes(` ${m}`))) return 'decision'
+  
+  const isQuestion = sentence.trim().endsWith('?') || 
+                     QUESTION_WORDS.some(w => lower.startsWith(w))
+  
+  const hasBranches = branches.length > 0
+  
+  // Strict rule: Decision only if it's a question or has explicit logical branches
+  if (isQuestion || hasBranches) {
+    return 'decision'
+  }
+  
   return 'action'
+}
+
+/**
+ * Attempts to find explicit jump targets (e.g., "go back to step 1").
+ * Returns an array of { label, targetIndex }
+ */
+function inferBranches(sentence, currentIndex, totalSteps) {
+  const branches = []
+  
+  for (const bp of BRANCH_PATTERNS) {
+    const match = sentence.match(bp.pattern)
+    if (match) {
+      let targetIndex = null
+      
+      // If a step number is explicitly mentioned (e.g. "step 2")
+      if (match[1]) {
+        targetIndex = parseInt(match[1], 10) - 1
+      } 
+      // If "return to start"
+      else if (bp.pattern.source.includes('start|beginning')) {
+        targetIndex = 0
+      }
+      
+      if (targetIndex !== null && targetIndex >= 0 && targetIndex < totalSteps) {
+        branches.push({ label: bp.label, targetIndex })
+      }
+    }
+  }
+  
+  return branches
 }
 
 function buildTitle(sentence) {
@@ -119,13 +183,13 @@ function buildTitle(sentence) {
     clean = clean.replace(pattern, '')
   }
 
-  // Capitalise and truncate to ~60 chars at a word boundary
+  // Capitalise and truncate to ~120 chars at a word boundary
   clean = capitalise(clean.replace(/\s+/g, ' ').trim())
-  if (clean.length <= 60) return clean.replace(/[.!?]+$/, '')
+  if (clean.length <= 120) return clean.replace(/[.!?]+$/, '')
 
-  const truncated = clean.slice(0, 60)
+  const truncated = clean.slice(0, 120)
   const lastSpace = truncated.lastIndexOf(' ')
-  return (lastSpace > 30 ? truncated.slice(0, lastSpace) : truncated) + '…'
+  return (lastSpace > 60 ? truncated.slice(0, lastSpace) : truncated) + '…'
 }
 
 // ─── Text splitter strategies ─────────────────────────────────────────────────
@@ -188,7 +252,8 @@ function splitBySentences(text) {
  *   title: string,
  *   description: string,
  *   actor: string,
- *   type: 'action' | 'decision' | 'trigger' | 'end'
+ *   type: 'action' | 'decision' | 'trigger' | 'end',
+ *   branches: Array<{ label: string, targetIndex: number }>
  * }>}
  */
 export function extractSteps(rawInput) {
@@ -203,23 +268,84 @@ export function extractSteps(rawInput) {
 
   if (!segments || segments.length === 0) return []
 
-  // Normalise and cap at 15 steps for v0.1
-  const capped = segments.slice(0, 15)
+  // Normalise and cap at 12 segments (may expand to 15+ steps)
+  const cappedSegments = segments.slice(0, 12)
+  const steps = []
 
-  return capped.map((segment, index) => {
+  for (const segment of cappedSegments) {
     const clean = segment.replace(/\s+/g, ' ').trim()
+    const actor = inferActor(clean)
+    let expanded = false
 
-    return {
-      id:          generateId(index),
-      stepNumber:  index + 1,
-      title:       buildTitle(clean),
-      description: capitalise(clean),
-      actor:       inferActor(clean),
-      type:        index === 0
-        ? inferType(clean) === 'trigger' ? 'trigger' : 'action'
-        : index === capped.length - 1
-          ? inferType(clean) === 'end' ? 'end' : 'action'
-          : inferType(clean),
+    for (const transform of CONDITIONAL_TRANSFORMS) {
+      const match = clean.match(transform.regex)
+      if (match) {
+        const questionText = transform.question(match)
+        const actionText = transform.action(match)
+        const label = transform.label(match)
+
+        const decisionStep = {
+          id:          generateId(steps.length),
+          stepNumber:  steps.length + 1,
+          title:       questionText,
+          description: capitalise(clean),
+          actor:       actor,
+          type:        'decision',
+          branches:    [] // Will be linked to next step
+        }
+        steps.push(decisionStep)
+
+        const actionStep = {
+          id:          generateId(steps.length),
+          stepNumber:  steps.length + 1,
+          title:       buildTitle(actionText),
+          description: capitalise(clean),
+          actor:       actor,
+          type:        'action',
+          branches:    []
+        }
+        
+        // Link decision to this action
+        decisionStep.branches.push({ 
+          label: label, 
+          targetIndex: steps.length 
+        })
+        
+        steps.push(actionStep)
+        expanded = true
+        break
+      }
     }
+
+    if (!expanded) {
+      steps.push({
+        id:          generateId(steps.length),
+        stepNumber:  steps.length + 1,
+        title:       buildTitle(clean),
+        description: capitalise(clean),
+        actor:       actor,
+        type:        'action', // Default, will refine below
+        branches:    []
+      })
+    }
+  }
+
+  // Refine types and infer non-sequential branches
+  return steps.map((step, index) => {
+    // Only infer additional branches for non-expanded steps
+    if (step.branches.length === 0) {
+      step.branches = inferBranches(step.description, index, steps.length)
+    }
+
+    // Refine type based on refined logic
+    if (index === 0) {
+      step.type = inferType(step.title, step.branches) === 'trigger' ? 'trigger' : step.type
+    } else if (index === steps.length - 1) {
+      step.type = inferType(step.title, step.branches) === 'end' ? 'end' : step.type
+    } else if (step.type !== 'decision') {
+      step.type = inferType(step.title, step.branches)
+    }
+
+    return step
   })
 }
