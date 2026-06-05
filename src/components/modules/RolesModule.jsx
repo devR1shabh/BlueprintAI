@@ -62,7 +62,7 @@ function RoleCard({ role }) {
           {role.responsibilities.map((resp, i) => (
             <li key={i} className="flex items-start gap-2 text-xs text-surface-400">
               <span className="mt-1.5 w-1 h-1 rounded-full bg-surface-600 shrink-0" />
-              <span className="leading-relaxed">{resp}</span>
+              <span className="leading-relaxed min-w-0">{resp}</span>
             </li>
           ))}
         </ul>
